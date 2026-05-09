@@ -1,6 +1,6 @@
 ﻿import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useExpense } from "../ExpenseContext";
+import useExpense from "../useExpense";
 import ExpenseCard from "../components/ExpenseCard";
 
 const ALL_MONTHS_VALUE = "all";

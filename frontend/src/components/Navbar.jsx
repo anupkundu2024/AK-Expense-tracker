@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
-import { useAuth } from "../AuthContext";
+import { UserButton, useUser } from "@clerk/clerk-react";
+import useExpense from "../useExpense";
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
+  const { user } = useUser();
+  const { isAdmin } = useExpense();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
@@ -50,28 +52,26 @@ const Navbar = () => {
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div className="hidden md:flex flex-col items-end text-right">
               <span className="text-sm font-semibold text-gray-900">
-                {user?.name}
+                {user?.fullName || user?.primaryEmailAddress?.emailAddress}
               </span>
-              <span className="text-xs text-gray-500">
-                {user?.role === "admin" ? "Administrator" : "Standard user"}
-              </span>
+              {isAdmin && (
+                <span className="text-xs font-semibold text-purple-600">
+                  Admin
+                </span>
+              )}
             </div>
 
-            {user?.role === "admin" && (
-              <span className="hidden md:inline-flex rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-purple-700">
-                Admin
-              </span>
-            )}
-
-            <button
-              onClick={logout}
-              className="hidden md:inline-flex items-center gap-2 rounded-2xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-            >
-              Logout
-            </button>
+            <UserButton
+              afterSignOutUrl="/sign-in"
+              appearance={{
+                elements: {
+                  userButtonAvatarBox: "w-10 h-10",
+                },
+              }}
+            />
 
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -122,20 +122,6 @@ const Navbar = () => {
                   {item.label}
                 </NavLink>
               ))}
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
-                <p className="text-sm font-semibold text-gray-900">
-                  {user?.name}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {user?.role === "admin" ? "Administrator" : "Standard user"}
-                </p>
-                <button
-                  onClick={logout}
-                  className="mt-3 w-full rounded-xl bg-purple-600 py-2 text-sm font-semibold text-white transition hover:bg-purple-700"
-                >
-                  Logout
-                </button>
-              </div>
             </div>
           </div>
         )}

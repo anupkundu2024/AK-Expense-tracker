@@ -1,11 +1,10 @@
-﻿import { useState } from "react";
-import { useAuth } from "../AuthContext";
-import { useExpense } from "../ExpenseContext";
+import { useState } from "react";
+import { useUser } from "@clerk/clerk-react";
+import useExpense from "../useExpense";
 
 const ExpenseCard = ({ expense }) => {
-  const { user } = useAuth();
-  const { users, updateExpense, deleteExpense } = useExpense();
-  const isAdmin = user?.role === "admin";
+  const { user } = useUser();
+  const { users, updateExpense, deleteExpense, isAdmin } = useExpense();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     itemName: expense.itemName,
@@ -19,7 +18,7 @@ const ExpenseCard = ({ expense }) => {
   const creatorNameRaw = expense.createdBy || expense.paidBy || "Unknown";
   const creatorName = creatorNameRaw.trim();
   const isCurrentUserCreator =
-    creatorName.toLowerCase() === user?.name?.trim().toLowerCase();
+    creatorName.toLowerCase() === user?.fullName?.trim().toLowerCase();
   const displayedCreator = isCurrentUserCreator ? "You" : creatorName;
   const creatorInitials = isCurrentUserCreator
     ? "Y"
@@ -30,20 +29,14 @@ const ExpenseCard = ({ expense }) => {
         .slice(0, 2)
         .join("");
 
-  console.log(
-    "[ExpenseCard] expense.createdBy:",
-    expense.createdBy,
-    "displayedCreator:",
-    displayedCreator,
-  );
   const [actionLoading, setActionLoading] = useState(false);
 
-  const handleSharedByChange = (user) => {
+  const handleSharedByChange = (userName) => {
     setEditData((prev) => ({
       ...prev,
-      sharedBy: prev.sharedBy.includes(user)
-        ? prev.sharedBy.filter((u) => u !== user)
-        : [...prev.sharedBy, user],
+      sharedBy: prev.sharedBy.includes(userName)
+        ? prev.sharedBy.filter((u) => u !== userName)
+        : [...prev.sharedBy, userName],
     }));
   };
 
@@ -115,9 +108,13 @@ const ExpenseCard = ({ expense }) => {
               }
               className="w-full px-4 py-2 rounded-xl border border-gray-300 bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-offset-0 text-gray-900 focus:outline-none appearance-none cursor-pointer transition-all duration-200"
             >
-              {users.map((user) => (
-                <option key={user} value={user} className="text-gray-900">
-                  {user}
+              {users.map((userName) => (
+                <option
+                  key={userName}
+                  value={userName}
+                  className="text-gray-900"
+                >
+                  {userName}
                 </option>
               ))}
             </select>
@@ -127,18 +124,18 @@ const ExpenseCard = ({ expense }) => {
               Shared By
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {users.map((user) => (
+              {users.map((userName) => (
                 <label
-                  key={user}
+                  key={userName}
                   className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-all duration-200 cursor-pointer"
                 >
                   <input
                     type="checkbox"
-                    checked={editData.sharedBy.includes(user)}
-                    onChange={() => handleSharedByChange(user)}
+                    checked={editData.sharedBy.includes(userName)}
+                    onChange={() => handleSharedByChange(userName)}
                     className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
                   />
-                  <span className="text-gray-900">{user}</span>
+                  <span className="text-gray-900">{userName}</span>
                 </label>
               ))}
             </div>
@@ -270,7 +267,7 @@ const ExpenseCard = ({ expense }) => {
         </div>
       </div>
 
-      {/* Action Buttons */}
+      {/* Action Buttons - Only show for admin */}
       {isAdmin && (
         <div className="px-5 py-3 border-t border-gray-100 flex gap-2 justify-end">
           <button

@@ -1,12 +1,19 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../AuthContext";
-import { useExpense } from "../ExpenseContext";
+import { useUser } from "@clerk/clerk-react";
+import useExpense from "../useExpense";
 
 const Dashboard = () => {
-  const { expenses, users, settlements, monthlySummary, settleUp } =
-    useExpense();
-  const { user } = useAuth();
+  const {
+    expenses,
+    users,
+    settlements,
+    monthlySummary,
+    settleUp,
+    isAdmin,
+    currentUser,
+  } = useExpense();
+  const { user } = useUser();
   const [selectedMonth, setSelectedMonth] = useState("");
   const [settleLoadingId, setSettleLoadingId] = useState(null);
 
@@ -16,12 +23,6 @@ const Dashboard = () => {
   );
 
   const currentMonth = months[0];
-
-  useEffect(() => {
-    if (!selectedMonth && currentMonth) {
-      setSelectedMonth(currentMonth);
-    }
-  }, [currentMonth, selectedMonth]);
 
   const selectedMonthKey = selectedMonth || currentMonth;
   const currentSummary = selectedMonthKey
@@ -35,14 +36,22 @@ const Dashboard = () => {
       })
     : "Current Month";
 
+  // Use currentUser.fullName from the backend for consistent name matching
+  const loggedInName = currentUser?.fullName || user?.fullName || "";
+
   const monthTotals = currentSummary
-    ? users.map((user) => ({
-        user,
-        paid: currentSummary.users[user]?.totalPaid || 0,
-        share: currentSummary.users[user]?.totalShare || 0,
-        balance: currentSummary.users[user]?.balance || 0,
+    ? users.map((userName) => ({
+        user: userName,
+        paid: currentSummary.users[userName]?.totalPaid || 0,
+        share: currentSummary.users[userName]?.totalShare || 0,
+        balance: currentSummary.users[userName]?.balance || 0,
       }))
-    : users.map((user) => ({ user, paid: 0, share: 0, balance: 0 }));
+    : users.map((userName) => ({
+        user: userName,
+        paid: 0,
+        share: 0,
+        balance: 0,
+      }));
 
   const recentActivity = useMemo(() => {
     const activity = [
@@ -76,6 +85,11 @@ const Dashboard = () => {
         <h1 className="text-4xl font-bold text-gray-900">Dashboard</h1>
         <p className="text-gray-600">
           Track expenses and settlements with your roommates
+          {isAdmin && (
+            <span className="ml-2 inline-flex items-center rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-semibold text-purple-700">
+              Admin
+            </span>
+          )}
         </p>
       </div>
 
@@ -187,13 +201,15 @@ const Dashboard = () => {
         <h2 className="text-xl font-bold text-gray-900 mb-6">Who Owes Whom</h2>
         {currentSummary?.settlements?.length > 0 ? (
           <div className="space-y-3">
-            {currentSummary.settlements.map((settlement) => {
-              const canSettle = user?.name === settlement.from;
-              const isLoading = settleLoadingId === settlement.id;
+            {currentSummary.settlements.map((settlement, index) => {
+              // Admin can settle for anyone. Normal users can only settle if they are the "from" person.
+              const canSettle = isAdmin || loggedInName === settlement.from;
+              const settleKey = `${settlement.from}-${settlement.to}-${index}`;
+              const isLoading = settleLoadingId === settleKey;
 
               const handleSettleClick = async () => {
                 if (!canSettle) return;
-                setSettleLoadingId(settlement.id);
+                setSettleLoadingId(settleKey);
                 await settleUp({
                   ...settlement,
                   date: new Date().toISOString(),
@@ -203,7 +219,7 @@ const Dashboard = () => {
 
               return (
                 <div
-                  key={`${settlement.from}-${settlement.to}-${settlement.amount}-${settlement.id}`}
+                  key={settleKey}
                   className="flex flex-col gap-4 rounded-xl border border-amber-200 bg-amber-50 p-5 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>

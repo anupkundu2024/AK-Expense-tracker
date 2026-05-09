@@ -1,26 +1,46 @@
-import { ExpenseProvider, useExpense } from "./ExpenseContext";
-import { AuthProvider, useAuth } from "./AuthContext";
+import { ExpenseProvider } from "./ExpenseContext";
+import useExpense from "./useExpense";
 import { Routes, Route, Navigate } from "react-router-dom";
+import {
+  useAuth,
+  SignIn,
+  SignUp,
+  SignedIn,
+  SignedOut,
+} from "@clerk/clerk-react";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import AddExpense from "./pages/AddExpense";
 import ExpenseList from "./pages/ExpenseList";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
 import "./App.css";
 
 function AppContent() {
   const { success, error, loading } = useExpense();
-  const { isAuthenticated } = useAuth();
+  const { isLoaded, isSignedIn } = useAuth();
+
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {isAuthenticated && <Navbar />}
-      <main className={isAuthenticated ? "flex-1 pt-16" : "flex-1 py-10"}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {(success || error || loading) && isAuthenticated && (
+      <SignedIn>
+        <Navbar />
+      </SignedIn>
+      <main
+        className={
+          isSignedIn
+            ? "flex-1 pt-16"
+            : "flex-1 py-10 flex flex-col items-center justify-center"
+        }
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+          {(success || error || loading) && isSignedIn && (
             <div className="space-y-3 mb-8">
               {success && (
                 <div className="rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 flex items-center gap-3">
@@ -71,46 +91,73 @@ function AppContent() {
 
           <Routes>
             <Route
-              path="/login"
+              path="/sign-in/*"
               element={
-                isAuthenticated ? <Navigate to="/" replace /> : <Login />
+                <div className="flex justify-center">
+                  <SignIn
+                    routing="path"
+                    path="/sign-in"
+                    signUpUrl="/sign-up"
+                    forceRedirectUrl="/"
+                  />
+                </div>
               }
             />
             <Route
-              path="/signup"
+              path="/sign-up/*"
               element={
-                isAuthenticated ? <Navigate to="/" replace /> : <Signup />
+                <div className="flex justify-center">
+                  <SignUp
+                    routing="path"
+                    path="/sign-up"
+                    signInUrl="/sign-in"
+                    forceRedirectUrl="/"
+                  />
+                </div>
               }
             />
             <Route
               path="/"
               element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
+                <>
+                  <SignedIn>
+                    <Dashboard />
+                  </SignedIn>
+                  <SignedOut>
+                    <Navigate to="/sign-in" replace />
+                  </SignedOut>
+                </>
               }
             />
             <Route
               path="/add-expense"
               element={
-                <ProtectedRoute>
-                  <AddExpense />
-                </ProtectedRoute>
+                <>
+                  <SignedIn>
+                    <AddExpense />
+                  </SignedIn>
+                  <SignedOut>
+                    <Navigate to="/sign-in" replace />
+                  </SignedOut>
+                </>
               }
             />
             <Route
               path="/expenses"
               element={
-                <ProtectedRoute>
-                  <ExpenseList />
-                </ProtectedRoute>
+                <>
+                  <SignedIn>
+                    <ExpenseList />
+                  </SignedIn>
+                  <SignedOut>
+                    <Navigate to="/sign-in" replace />
+                  </SignedOut>
+                </>
               }
             />
             <Route
               path="*"
-              element={
-                <Navigate to={isAuthenticated ? "/" : "/login"} replace />
-              }
+              element={<Navigate to={isSignedIn ? "/" : "/sign-in"} replace />}
             />
           </Routes>
         </div>
@@ -122,11 +169,9 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <ExpenseProvider>
-        <AppContent />
-      </ExpenseProvider>
-    </AuthProvider>
+    <ExpenseProvider>
+      <AppContent />
+    </ExpenseProvider>
   );
 }
 

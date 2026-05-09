@@ -209,10 +209,18 @@ const getAllExpenses = async (req, res) => {
       normalizedSettlements,
     );
 
+    // Include user info in response so frontend knows the role
+    const userInfo = req.user ? {
+      fullName: req.user.fullName,
+      email: req.user.email,
+      role: req.user.role,
+    } : null;
+
     res.json({
       expenses: normalizedExpenses,
       settlements: normalizedSettlements,
       summary,
+      currentUser: userInfo,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -221,11 +229,14 @@ const getAllExpenses = async (req, res) => {
 
 // Add new expense
 const addExpense = async (req, res) => {
-  const { itemName, amount, sharedBy, date, notes } = req.body;
-  const paidBy = normalizeUserName(req.user?.name);
-  const createdBy = normalizeUserName(req.user?.name || paidBy);
+  const { itemName, amount, paidBy, sharedBy, date, notes } = req.body;
+  
+  // Use paidBy from the request body (admin can add expenses for anyone)
+  // Fall back to logged-in user's name if not provided
+  const normalizedPaidBy = normalizeUserName(paidBy || req.user?.fullName);
+  const createdBy = normalizeUserName(req.user?.fullName);
 
-  if (!itemName || !amount || !sharedBy || !date || !paidBy || !createdBy) {
+  if (!itemName || !amount || !sharedBy || !date || !normalizedPaidBy || !createdBy) {
     return res
       .status(400)
       .json({ message: "All required fields must be provided" });
@@ -250,7 +261,7 @@ const addExpense = async (req, res) => {
     const newExpense = new Expense({
       itemName,
       amount: roundedAmount,
-      paidBy,
+      paidBy: normalizedPaidBy,
       sharedBy: normalizedSharedBy,
       date: expenseDate,
       notes: notes || "",
@@ -261,13 +272,14 @@ const addExpense = async (req, res) => {
     const savedExpense = await newExpense.save();
     res.status(201).json(normalizeExpense(savedExpense));
   } catch (error) {
+    console.error("[addExpense] Error:", error.message);
     res.status(500).json({ message: error.message });
   }
 };
 
 const settleUp = async (req, res) => {
   const { from, to, amount, date, notes } = req.body;
-  const createdBy = normalizeUserName(req.user?.name);
+  const createdBy = normalizeUserName(req.user?.fullName);
   const normalizedFrom = normalizeUserName(from);
   const normalizedTo = normalizeUserName(to);
 
@@ -283,7 +295,8 @@ const settleUp = async (req, res) => {
       .json({ message: "Invalid settlement data provided." });
   }
 
-  if (createdBy !== normalizedFrom) {
+  // Admin can settle for anyone, normal users can only settle for themselves
+  if (req.user?.role !== "admin" && createdBy !== normalizedFrom) {
     return res.status(403).json({
       message: "You can only record settlements from your own account.",
     });
@@ -334,10 +347,15 @@ const settleUp = async (req, res) => {
   }
 };
 
-// Update expense
+// Update expense (admin only)
 const updateExpense = async (req, res) => {
   const { id } = req.params;
   const { itemName, amount, paidBy, sharedBy, date, notes } = req.body;
+
+  // Only admin can edit expenses
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({ message: "Only admin can edit expenses." });
+  }
 
   try {
     const updateData = {};
@@ -374,9 +392,14 @@ const updateExpense = async (req, res) => {
   }
 };
 
-// Delete expense
+// Delete expense (admin only)
 const deleteExpense = async (req, res) => {
   const { id } = req.params;
+
+  // Only admin can delete expenses
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({ message: "Only admin can delete expenses." });
+  }
 
   try {
     const deletedExpense = await Expense.findByIdAndDelete(id);

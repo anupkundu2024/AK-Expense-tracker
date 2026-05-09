@@ -1,21 +1,11 @@
-﻿import { createContext, useContext, useEffect, useState } from "react";
-import { useAuth } from "./AuthContext";
-
-const BASE_URL = "http://localhost:5000/api";
-const users = ["Anup Kundu", "Sayan Nandi", "Sayan Mondal"];
+import { createContext, useEffect, useState, useCallback } from "react";
+import { useAuth } from "@clerk/clerk-react";
+import { BASE_URL, USERS } from "./constants";
 
 const ExpenseContext = createContext();
 
-export const useExpense = () => {
-  const context = useContext(ExpenseContext);
-  if (!context) {
-    throw new Error("useExpense must be used within ExpenseProvider");
-  }
-  return context;
-};
-
 export const ExpenseProvider = ({ children }) => {
-  const { token, logout } = useAuth();
+  const { getToken, signOut, isSignedIn, isLoaded } = useAuth();
   const [expenses, setExpenses] = useState([]);
   const [settlements, setSettlements] = useState([]);
   const [monthlySummary, setMonthlySummary] = useState({});
@@ -23,6 +13,9 @@ export const ExpenseProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  const isAdmin = currentUser?.role === "admin";
 
   const showMessage = (type, message) => {
     if (type === "success") {
@@ -50,30 +43,41 @@ export const ExpenseProvider = ({ children }) => {
       id: settlement._id || settlement.id,
     }));
 
-  const getHeaders = () => {
+  const getHeaders = useCallback(async () => {
     const headers = {
       "Content-Type": "application/json",
     };
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
+    try {
+      const token = await getToken();
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (tokenError) {
+      console.error("[Auth] Failed to get auth token:", tokenError);
     }
     return headers;
-  };
+  }, [getToken]);
 
-  const handleAuthError = (status, message) => {
-    if (status === 401 || status === 403) {
-      logout();
-      showMessage("error", message || "Session expired. Please login again.");
-      window.location.href = "/login";
-      return true;
-    }
-    return false;
-  };
+  const handleAuthError = useCallback(
+    (status, message) => {
+      if (status === 401 || status === 403) {
+        // Don't auto sign-out for 403 (permission denied), only for 401 (unauthenticated)
+        if (status === 401) {
+          signOut();
+        }
+        showMessage("error", message || "Session expired. Please login again.");
+        return true;
+      }
+      return false;
+    },
+    [signOut],
+  );
 
-  const fetchExpenses = async () => {
-    if (!token) {
+  const fetchExpenses = useCallback(async () => {
+    if (!isLoaded || !isSignedIn) {
       setExpenses([]);
       setMonthlySummary({});
+      setCurrentUser(null);
       return;
     }
 
@@ -81,9 +85,8 @@ export const ExpenseProvider = ({ children }) => {
     setError(null);
 
     try {
-      const response = await fetch(`${BASE_URL}/expenses`, {
-        headers: getHeaders(),
-      });
+      const headers = await getHeaders();
+      const response = await fetch(`${BASE_URL}/expenses`, { headers });
       const data = await response.json();
 
       if (!response.ok) {
@@ -94,15 +97,20 @@ export const ExpenseProvider = ({ children }) => {
       setExpenses(normalizeExpenses(data.expenses || []));
       setSettlements(normalizeSettlements(data.settlements || []));
       setMonthlySummary(data.summary || {});
+
+      // Store user info from backend response
+      if (data.currentUser) {
+        setCurrentUser(data.currentUser);
+      }
     } catch (fetchError) {
       showMessage("error", fetchError.message || "Failed to load expenses");
     } finally {
       setLoading(false);
     }
-  };
+  }, [isLoaded, isSignedIn, getHeaders, handleAuthError]);
 
   const settleUp = async (settlement) => {
-    if (!token) {
+    if (!isSignedIn) {
       showMessage("error", "Authentication required.");
       return false;
     }
@@ -111,9 +119,10 @@ export const ExpenseProvider = ({ children }) => {
     setError(null);
 
     try {
+      const headers = await getHeaders();
       const response = await fetch(`${BASE_URL}/expenses/settle`, {
         method: "POST",
-        headers: getHeaders(),
+        headers,
         body: JSON.stringify(settlement),
       });
       const data = await response.json();
@@ -140,7 +149,7 @@ export const ExpenseProvider = ({ children }) => {
   };
 
   const addExpense = async (expense) => {
-    if (!token) {
+    if (!isSignedIn) {
       showMessage("error", "Authentication required.");
       return false;
     }
@@ -149,20 +158,41 @@ export const ExpenseProvider = ({ children }) => {
     setError(null);
 
     try {
-      const response = await fetch(`${BASE_URL}/expenses`, {
-        method: "POST",
-        headers: getHeaders(),
-        body: JSON.stringify(expense),
-      });
+      const headers = await getHeaders();
 
-      const data = await response.json();
+      let response;
+      try {
+        response = await fetch(`${BASE_URL}/expenses`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(expense),
+        });
+      } catch (networkError) {
+        console.error(
+          "[AddExpense] Network error - backend may not be running:",
+          networkError,
+        );
+        throw new Error(
+          "Cannot connect to server. Please ensure the backend is running on port 5000.",
+        );
+      }
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        throw new Error(
+          `Server returned invalid response (status: ${response.status})`,
+        );
+      }
+
       if (!response.ok) {
         if (handleAuthError(response.status, data.message)) return false;
         throw new Error(data.message || "Unable to add expense");
       }
 
       await fetchExpenses();
-      showMessage("success", "Expense added successfully");
+      showMessage("success", "Expense added successfully!");
       return true;
     } catch (addError) {
       showMessage("error", addError.message || "Failed to add expense");
@@ -173,7 +203,7 @@ export const ExpenseProvider = ({ children }) => {
   };
 
   const updateExpense = async (id, updates) => {
-    if (!token) {
+    if (!isSignedIn) {
       showMessage("error", "Authentication required.");
       return false;
     }
@@ -182,9 +212,10 @@ export const ExpenseProvider = ({ children }) => {
     setError(null);
 
     try {
+      const headers = await getHeaders();
       const response = await fetch(`${BASE_URL}/expenses/${id}`, {
         method: "PUT",
-        headers: getHeaders(),
+        headers,
         body: JSON.stringify(updates),
       });
       const data = await response.json();
@@ -206,7 +237,7 @@ export const ExpenseProvider = ({ children }) => {
   };
 
   const deleteExpense = async (id) => {
-    if (!token) {
+    if (!isSignedIn) {
       showMessage("error", "Authentication required.");
       return false;
     }
@@ -215,9 +246,10 @@ export const ExpenseProvider = ({ children }) => {
     setError(null);
 
     try {
+      const headers = await getHeaders();
       const response = await fetch(`${BASE_URL}/expenses/${id}`, {
         method: "DELETE",
-        headers: getHeaders(),
+        headers,
       });
       const data = await response.json();
 
@@ -238,17 +270,17 @@ export const ExpenseProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    if (token) {
+    if (isLoaded && isSignedIn) {
       fetchExpenses();
     } else {
       setExpenses([]);
       setMonthlySummary({});
+      setCurrentUser(null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [isLoaded, isSignedIn, fetchExpenses]);
 
   const value = {
-    users,
+    users: USERS,
     expenses,
     monthlySummary,
     currentPage,
@@ -262,9 +294,13 @@ export const ExpenseProvider = ({ children }) => {
     deleteExpense,
     settleUp,
     settlements,
+    currentUser,
+    isAdmin,
   };
 
   return (
     <ExpenseContext.Provider value={value}>{children}</ExpenseContext.Provider>
   );
 };
+
+export default ExpenseContext;
