@@ -100,11 +100,11 @@ const ExpenseForm = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 card-shadow">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 sm:p-8 card-shadow transition-colors duration-300">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Validation Error */}
         {validationError && (
-          <div className="rounded-lg bg-red-50 border border-red-200 text-red-800 p-4 flex items-center gap-3">
+          <div className="rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-800 dark:text-red-300 p-4 flex items-center gap-3">
             <svg
               className="w-5 h-5 flex-shrink-0"
               fill="currentColor"
@@ -122,7 +122,7 @@ const ExpenseForm = () => {
 
         {/* Item Name */}
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-2">
+          <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
             Item Name
           </label>
           <input
@@ -133,18 +133,18 @@ const ExpenseForm = () => {
               setValidationError("");
               setFormData({ ...formData, itemName: e.target.value });
             }}
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-offset-0 text-gray-900 placeholder:text-gray-400 focus:outline-none transition-all duration-200"
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30 focus:ring-offset-0 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none transition-all duration-200"
             placeholder="e.g., Grocery shopping, Weekly meal"
           />
         </div>
 
         {/* Amount */}
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-2">
+          <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
             Amount
           </label>
           <div className="relative">
-            <span className="absolute left-4 top-3 text-gray-500 font-medium">
+            <span className="absolute left-4 top-3 text-gray-500 dark:text-gray-400 font-medium">
               ₹
             </span>
             <input
@@ -157,14 +157,14 @@ const ExpenseForm = () => {
                 setValidationError("");
                 setFormData({ ...formData, amount: e.target.value });
               }}
-              className="w-full pl-8 pr-4 py-2 rounded-lg border border-gray-300 bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-offset-0 text-gray-900 placeholder:text-gray-400 focus:outline-none transition-all duration-200"
+              className="w-full pl-8 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30 focus:ring-offset-0 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none transition-all duration-200"
               placeholder="0.00"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-2">
+          <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
             Paid By
           </label>
           <select
@@ -173,10 +173,10 @@ const ExpenseForm = () => {
             onChange={(e) =>
               setFormData({ ...formData, paidBy: e.target.value })
             }
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-offset-0 text-gray-900 focus:outline-none transition-all duration-200"
+            className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30 focus:ring-offset-0 text-gray-900 dark:text-white focus:outline-none transition-all duration-200"
           >
             {users.map((roommate) => (
-              <option key={roommate} value={roommate}>
+              <option key={roommate} value={roommate} className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
                 {roommate}
               </option>
             ))}
@@ -185,7 +185,7 @@ const ExpenseForm = () => {
 
         {/* Shared By */}
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-3">
+          <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
             Shared By
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -194,22 +194,22 @@ const ExpenseForm = () => {
                 key={userName}
                 className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
                   formData.sharedBy.includes(userName)
-                    ? "border-purple-400 bg-purple-50"
-                    : "border-gray-300 bg-gray-50 hover:bg-white"
+                    ? "border-purple-400 dark:border-purple-500 bg-purple-50 dark:bg-purple-900/30"
+                    : "border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 hover:bg-white dark:hover:bg-gray-700"
                 }`}
               >
                 <input
                   type="checkbox"
                   checked={formData.sharedBy.includes(userName)}
                   onChange={() => handleSharedByChange(userName)}
-                  className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                  className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-purple-600 focus:ring-purple-500 cursor-pointer"
                 />
-                <span className="font-medium text-gray-900">{userName}</span>
+                <span className="font-medium text-gray-900 dark:text-white">{userName}</span>
               </label>
             ))}
           </div>
           {formData.sharedBy.length === 0 && (
-            <p className="mt-2 text-xs text-gray-500">
+            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
               Select at least one person who shares this expense.
             </p>
           )}
@@ -217,7 +217,7 @@ const ExpenseForm = () => {
 
         {/* Date */}
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-2">
+          <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
             Date
           </label>
           <input
@@ -232,16 +232,16 @@ const ExpenseForm = () => {
                 value > todayDate ? "Future dates are not allowed" : "",
               );
             }}
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-offset-0 text-gray-900 focus:outline-none transition-all duration-200"
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30 focus:ring-offset-0 text-gray-900 dark:text-white focus:outline-none transition-all duration-200"
           />
           {dateError && (
-            <p className="mt-2 text-sm text-red-600">{dateError}</p>
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{dateError}</p>
           )}
         </div>
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-2">
+          <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
             Notes (optional)
           </label>
           <textarea
@@ -249,7 +249,7 @@ const ExpenseForm = () => {
             onChange={(e) =>
               setFormData({ ...formData, notes: e.target.value })
             }
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 bg-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-offset-0 text-gray-900 placeholder:text-gray-400 focus:outline-none resize-none transition-all duration-200"
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-500/30 focus:ring-offset-0 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none resize-none transition-all duration-200"
             rows="4"
             placeholder="Add any additional details..."
           />
@@ -259,7 +259,7 @@ const ExpenseForm = () => {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
+          className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">

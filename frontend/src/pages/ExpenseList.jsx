@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import useExpense from "../useExpense";
 import ExpenseCard from "../components/ExpenseCard";
@@ -88,18 +88,18 @@ const ExpenseList = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Expenses</h1>
-        <p className="text-gray-600 max-w-2xl">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Expenses</h1>
+        <p className="text-gray-600 dark:text-gray-400 max-w-2xl">
           View your full expense history and filter by month to keep track of
           spending.
         </p>
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm transition-colors duration-300">
         <div className="relative">
           <svg
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500"
             width="20"
             height="20"
             viewBox="0 0 24 24"
@@ -115,12 +115,12 @@ const ExpenseList = () => {
             placeholder="Search expenses by item, note, paid by, or created by..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:border-purple-500 focus:ring-2 focus:ring-purple-100 outline-none transition-all duration-200"
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-100 dark:focus:ring-purple-900/50 outline-none transition-all duration-200"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
             >
               ✕
             </button>
@@ -129,21 +129,21 @@ const ExpenseList = () => {
       </div>
 
       {/* Filters and Info Bar */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm transition-colors duration-300">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {/* Month Filter */}
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-gray-900 mb-2">
+            <p className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
               Month Filter
             </p>
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm outline-none transition focus:border-purple-500 focus:ring-2 focus:ring-purple-100"
+              className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-gray-900 dark:text-white shadow-sm outline-none transition focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-100 dark:focus:ring-purple-900/50"
             >
               <option value={ALL_MONTHS_VALUE}>All Months</option>
               {months.map((month) => (
-                <option key={month} value={month} className="text-gray-900">
+                <option key={month} value={month} className="text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800">
                   {formatMonthLabel(month)}
                 </option>
               ))}
@@ -152,7 +152,7 @@ const ExpenseList = () => {
 
           {/* Info Badge */}
           <div className="flex flex-col justify-end">
-            <div className="rounded-xl bg-purple-50 border border-purple-100 px-4 py-3 text-sm font-semibold text-purple-900 shadow-sm">
+            <div className="rounded-xl bg-purple-50 dark:bg-purple-900/30 border border-purple-100 dark:border-purple-700/40 px-4 py-3 text-sm font-semibold text-purple-900 dark:text-purple-300 shadow-sm">
               Showing {sortedExpenses.length} expense
               {sortedExpenses.length === 1 ? "" : "s"}
               {selectedMonth !== ALL_MONTHS_VALUE && hasExpenses
@@ -163,7 +163,7 @@ const ExpenseList = () => {
         </div>
 
         {sortedExpenses.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <div className="rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 px-4 py-3 text-white font-semibold shadow-sm inline-block">
               Total: ₹{totalForMonth.toFixed(2)}
             </div>
@@ -173,12 +173,12 @@ const ExpenseList = () => {
 
       {/* Expenses List or Empty State */}
       {isFilteredEmpty ? (
-        <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-12 text-center shadow-sm">
+        <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 p-12 text-center shadow-sm">
           <div className="mb-4 text-5xl">🔍</div>
-          <h3 className="text-2xl font-semibold text-gray-900 mb-2">
+          <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
             No expenses found
           </h3>
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">
+          <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
             {searchQuery
               ? `No expenses match "${searchQuery}". Try adjusting your search or filter.`
               : `There are no expenses recorded for ${formatMonthLabel(selectedMonth)}.`}
@@ -203,12 +203,12 @@ const ExpenseList = () => {
           </div>
         </div>
       ) : !hasExpenses ? (
-        <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-12 text-center shadow-sm">
+        <div className="rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50 p-12 text-center shadow-sm">
           <div className="mb-4 text-6xl">💰</div>
-          <h3 className="text-2xl font-semibold text-gray-900 mb-3">
+          <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-3">
             No expenses yet
           </h3>
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">
+          <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
             Add your first shared expense to get started with tracking roommate
             costs.
           </p>

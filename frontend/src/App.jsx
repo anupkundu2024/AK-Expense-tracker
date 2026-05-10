@@ -21,14 +21,14 @@ function AppContent() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <SignedIn>
         <Navbar />
       </SignedIn>
@@ -43,7 +43,7 @@ function AppContent() {
           {(success || error || loading) && isSignedIn && (
             <div className="space-y-3 mb-8">
               {success && (
-                <div className="rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 flex items-center gap-3">
+                <div className="rounded-lg bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 p-4 flex items-center gap-3">
                   <svg
                     className="w-5 h-5 flex-shrink-0"
                     fill="currentColor"
@@ -59,7 +59,7 @@ function AppContent() {
                 </div>
               )}
               {error && (
-                <div className="rounded-lg bg-red-50 border border-red-200 text-red-800 p-4 flex items-center gap-3">
+                <div className="rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-800 dark:text-red-300 p-4 flex items-center gap-3">
                   <svg
                     className="w-5 h-5 flex-shrink-0"
                     fill="currentColor"
@@ -75,7 +75,7 @@ function AppContent() {
                 </div>
               )}
               {loading && (
-                <div className="rounded-lg bg-blue-50 border border-blue-200 text-blue-800 p-4 flex items-center gap-3">
+                <div className="rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-blue-800 dark:text-blue-300 p-4 flex items-center gap-3">
                   <svg
                     className="w-5 h-5 flex-shrink-0 animate-spin"
                     fill="currentColor"

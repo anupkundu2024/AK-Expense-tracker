@@ -4,19 +4,41 @@ body,
 html,
 #root {
   min-height: 100%;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Light mode subtle gradients */
+body {
   background:
     radial-gradient(
       circle at top left,
-      rgba(139, 92, 246, 0.18),
+      rgba(139, 92, 246, 0.06),
       transparent 22%
     ),
     radial-gradient(
       circle at bottom right,
-      rgba(236, 72, 153, 0.18),
+      rgba(236, 72, 153, 0.06),
       transparent 28%
     ),
-    linear-gradient(180deg, #0f172a 0%, #030712 100%);
-  color: #f8fafc;
+    #f9fafb;
+  color: #374151;
+}
+
+/* Dark mode gradient background */
+html.dark body {
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(139, 92, 246, 0.15),
+      transparent 22%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(236, 72, 153, 0.12),
+      transparent 28%
+    ),
+    linear-gradient(180deg, #111827 0%, #030712 100%);
+  color: #e5e7eb;
 }
 
 body::before {
@@ -27,17 +49,36 @@ body::before {
   background:
     radial-gradient(
       circle at 20% 10%,
-      rgba(167, 139, 250, 0.18),
+      rgba(167, 139, 250, 0.06),
       transparent 18%
     ),
     radial-gradient(
       circle at 80% 20%,
-      rgba(236, 72, 153, 0.14),
+      rgba(236, 72, 153, 0.04),
       transparent 16%
     ),
     radial-gradient(
       circle at 50% 100%,
-      rgba(96, 165, 250, 0.1),
+      rgba(96, 165, 250, 0.03),
+      transparent 25%
+    );
+}
+
+html.dark body::before {
+  background:
+    radial-gradient(
+      circle at 20% 10%,
+      rgba(167, 139, 250, 0.12),
+      transparent 18%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(236, 72, 153, 0.08),
+      transparent 16%
+    ),
+    radial-gradient(
+      circle at 50% 100%,
+      rgba(96, 165, 250, 0.06),
       transparent 25%
     );
 }
@@ -54,25 +95,27 @@ html {
     sans-serif;
 }
 
-.bg-white,
-.bg-gray-50,
-.bg-gray-100,
-.bg-gray-200,
-.bg-gray-300,
-.bg-gray-500 {
-  background-clip: border-box;
-}
-
 .card-shadow {
   box-shadow:
-    0 28px 80px rgba(15, 23, 42, 0.16),
-    0 6px 24px rgba(15, 23, 42, 0.08);
+    0 28px 80px rgba(15, 23, 42, 0.08),
+    0 6px 24px rgba(15, 23, 42, 0.04);
+}
+
+html.dark .card-shadow {
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.3),
+    0 6px 24px rgba(0, 0, 0, 0.15);
 }
 
 .glass-card {
   background: rgba(255, 255, 255, 0.18);
   border: 1px solid rgba(255, 255, 255, 0.14);
   backdrop-filter: blur(18px);
+}
+
+html.dark .glass-card {
+  background: rgba(17, 24, 39, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .text-gradient {
@@ -89,6 +132,12 @@ html {
   backdrop-filter: blur(18px);
   background: rgba(15, 23, 42, 0.75);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+html.dark .app-footer {
+  background: rgba(3, 7, 18, 0.85);
+  box-shadow: 0 -16px 40px rgba(0, 0, 0, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 @keyframes fadeInUp {
@@ -127,4 +176,9 @@ button:hover {
 ::selection {
   background-color: rgba(167, 139, 250, 0.35);
   color: #030712;
+}
+
+html.dark ::selection {
+  background-color: rgba(167, 139, 250, 0.4);
+  color: #f9fafb;
 }

@@ -20,6 +20,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
   color: #374151;
   background-color: #f9fafb;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark body,
+html.dark body {
+  color: #e5e7eb;
+  background-color: #111827;
 }
 
 code {
@@ -35,6 +42,10 @@ code {
 
 ::-webkit-scrollbar-track {
   background: #f1f5f9;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #1e293b;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -85,28 +96,6 @@ input[type="number"] {
   }
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
-}
-
-/* Modern improvements for UI */
-
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
 /* Improve form elements */
 input[type="text"],
 input[type="number"],
@@ -115,20 +104,6 @@ input[type="email"],
 select,
 textarea {
   @apply transition-all duration-300;
-}
-
-/* Custom scrollbar with romantic colors */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-pink-50;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-gradient-to-b from-pink-400 to-purple-500 rounded-full hover:from-pink-500 hover:to-purple-600;
 }
 
 /* Focus visible for better accessibility */
@@ -150,7 +125,7 @@ button:focus-visible {
   animation: spin 1s linear infinite;
 }
 
-/* Romantic glow effects */
+/* Glow effects */
 @keyframes romantic-glow {
   0%,
   100% {
