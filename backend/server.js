@@ -9,9 +9,9 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
-// CORS configuration - must allow credentials and Authorization header
+// CORS configuration - allow local development and deployed frontend
 const corsOptions = {
-  origin: FRONTEND_URL,
+  origin: ["http://localhost:5173", "https://ak-expense-tracker.vercel.app"],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
@@ -22,9 +22,11 @@ app.use(express.json());
 
 // Clerk middleware - authenticates requests via session cookies or Bearer tokens
 // Must be applied before routes so getAuth(req) works in route handlers
-app.use(clerkMiddleware({
-  authorizedParties: [FRONTEND_URL]
-}));
+app.use(
+  clerkMiddleware({
+    authorizedParties: [FRONTEND_URL],
+  }),
+);
 
 // Routes
 const expenseRoutes = require("./routes/expenseRoutes");
