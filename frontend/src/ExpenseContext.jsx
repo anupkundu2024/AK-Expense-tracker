@@ -77,7 +77,7 @@ export const ExpenseProvider = ({ children }) => {
   );
 
   const fetchExpenses = useCallback(async () => {
-    if (!isLoaded || !isSignedIn) {
+    if (!isLoaded || !user) {
       setExpenses([]);
       setMonthlySummary({});
       setCurrentUser(null);
@@ -127,10 +127,10 @@ export const ExpenseProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [isLoaded, isSignedIn, getHeaders, handleAuthError]);
+  }, [isLoaded, user, getHeaders, handleAuthError]);
 
   const settleUp = async (settlement) => {
-    if (!isSignedIn) {
+    if (!user) {
       showMessage("error", "Authentication required.");
       return false;
     }
@@ -169,7 +169,7 @@ export const ExpenseProvider = ({ children }) => {
   };
 
   const addExpense = async (expense) => {
-    if (!isSignedIn) {
+    if (!user) {
       showMessage("error", "Authentication required.");
       return false;
     }
@@ -223,7 +223,7 @@ export const ExpenseProvider = ({ children }) => {
   };
 
   const updateExpense = async (id, updates) => {
-    if (!isSignedIn) {
+    if (!user) {
       showMessage("error", "Authentication required.");
       return false;
     }
@@ -257,7 +257,7 @@ export const ExpenseProvider = ({ children }) => {
   };
 
   const deleteExpense = async (id) => {
-    if (!isSignedIn) {
+    if (!user) {
       showMessage("error", "Authentication required.");
       return false;
     }
@@ -292,7 +292,7 @@ export const ExpenseProvider = ({ children }) => {
   const hasFetchedRef = React.useRef(false);
 
   useEffect(() => {
-    if (isLoaded && isSignedIn) {
+    if (isLoaded && user) {
       if (!hasFetchedRef.current) {
         hasFetchedRef.current = true;
         fetchExpenses();
@@ -303,7 +303,7 @@ export const ExpenseProvider = ({ children }) => {
       setMonthlySummary({});
       setCurrentUser(null);
     }
-  }, [isLoaded, isSignedIn, fetchExpenses]);
+  }, [isLoaded, user, fetchExpenses]);
 
   const value = {
     users: USERS,
