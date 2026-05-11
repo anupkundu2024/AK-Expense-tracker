@@ -1,11 +1,17 @@
-import React, { createContext, useEffect, useState, useCallback, useRef } from "react";
+import React, {
+  createContext,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { BASE_URL, USERS } from "./constants";
 
 const ExpenseContext = createContext();
 
 export const ExpenseProvider = ({ children }) => {
-  const { getToken, signOut, isSignedIn, isLoaded } = useAuth();
+  const { getToken, signOut, isSignedIn, isLoaded, user } = useAuth();
   const [expenses, setExpenses] = useState([]);
   const [settlements, setSettlements] = useState([]);
   const [monthlySummary, setMonthlySummary] = useState({});
@@ -59,14 +65,15 @@ export const ExpenseProvider = ({ children }) => {
   }, [getToken]);
 
   const handleAuthError = useCallback(
-    (status, message) => {
+    async (status, message) => {
       if (status === 401 || status === 403) {
-        showMessage("error", message || "Session expired or unauthorized. Please refresh the page.");
+        showMessage("error", "Session expired. Please sign in again.");
+        await signOut();
         return true;
       }
       return false;
     },
-    [],
+    [signOut],
   );
 
   const fetchExpenses = useCallback(async () => {
@@ -82,8 +89,25 @@ export const ExpenseProvider = ({ children }) => {
 
     try {
       const headers = await getHeaders();
-      const response = await fetch(`${BASE_URL}/expenses`, { headers });
-      const data = await response.json();
+      let response;
+      try {
+        response = await fetch(`${BASE_URL}/expenses`, { headers });
+      } catch (networkError) {
+        console.error("[FetchExpenses] Network error:", networkError);
+        throw new Error(
+          "Cannot connect to server. Please check your internet connection or try again later.",
+        );
+      }
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error("[FetchExpenses] Parse error:", parseError);
+        throw new Error(
+          `Server returned invalid response (status: ${response.status}). Please try again.`,
+        );
+      }
 
       if (!response.ok) {
         if (handleAuthError(response.status, data.message)) return;
