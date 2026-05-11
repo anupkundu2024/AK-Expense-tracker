@@ -11,7 +11,7 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
 // CORS configuration - allow local development and deployed frontend
 const corsOptions = {
-  origin: ["http://localhost:5173", "https://ak-expense-tracker.vercel.app"],
+  origin: ["http://localhost:5173", "https://ak-expense-tracker.vercel.app", FRONTEND_URL],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,

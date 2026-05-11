@@ -1,3 +1,3 @@
-export const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+const rawBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+export const BASE_URL = rawBaseUrl.endsWith('/api') ? rawBaseUrl : `${rawBaseUrl.replace(/\/$/, '')}/api`;
 export const USERS = ["Anup Kundu", "Sayan Nandi", "Sayan Mondal"];
