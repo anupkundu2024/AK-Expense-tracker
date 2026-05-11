@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, useCallback } from "react";
+import React, { createContext, useEffect, useState, useCallback, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { BASE_URL, USERS } from "./constants";
 
@@ -61,16 +61,12 @@ export const ExpenseProvider = ({ children }) => {
   const handleAuthError = useCallback(
     (status, message) => {
       if (status === 401 || status === 403) {
-        // Don't auto sign-out for 403 (permission denied), only for 401 (unauthenticated)
-        if (status === 401) {
-          signOut();
-        }
-        showMessage("error", message || "Session expired. Please login again.");
+        showMessage("error", message || "Session expired or unauthorized. Please refresh the page.");
         return true;
       }
       return false;
     },
-    [signOut],
+    [],
   );
 
   const fetchExpenses = useCallback(async () => {
@@ -269,10 +265,16 @@ export const ExpenseProvider = ({ children }) => {
     }
   };
 
+  const hasFetchedRef = React.useRef(false);
+
   useEffect(() => {
     if (isLoaded && isSignedIn) {
-      fetchExpenses();
+      if (!hasFetchedRef.current) {
+        hasFetchedRef.current = true;
+        fetchExpenses();
+      }
     } else {
+      hasFetchedRef.current = false;
       setExpenses([]);
       setMonthlySummary({});
       setCurrentUser(null);
